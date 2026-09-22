@@ -14,16 +14,13 @@ jobs:
     - name: Obtener codigo del repositorio
       uses: actions/checkout@v4
 
-    - name: Configurar MSBuild y herramientas de Visual Studio
-      uses: microsoft/setup-msbuild@v2
-
-    - name: Configurar .NET
+    - name: Configurar SDK de .NET 8
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
 
-    - name: Compilar Panel de Control C#
-      run: msbuild IntelControlPanel.csproj /p:Configuration=Release /p:Platform="Any CPU"
+    - name: Restaurar y Compilar Panel de Control C#
+      run: dotnet build IntelControlPanel.csproj -c Release
 
     - name: Compilar Cliente C++ (CMake)
       run: |
@@ -31,11 +28,13 @@ jobs:
         cmake --build build --config Release
 
     - name: Empaquetar artefactos compilados
+      shell: pwsh
       run: |
-        mkdir release_files
-        copy bin\Release\net8.0-windows\* release_files\ || true
-        copy build\Release\* release_files\ || true
-        copy intel_hd4000.inf release_files\ || true
+        New-Item -ItemType Directory -Force -Path release_files
+        if (Test-Path "bin/Release/net8.0-windows") { Copy-Item "bin/Release/net8.0-windows/*" "release_files/" -Recurse -Force }
+        if (Test-Path "build/Release") { Copy-Item "build/Release/*" "release_files/" -Recurse -Force }
+        if (Test-Path "intel_hd4000.inf") { Copy-Item "intel_hd4000.inf" "release_files/" -Force }
+        if (Test-Path "intel_hd4000_kmd.c") { Copy-Item "intel_hd4000_kmd.c" "release_files/" -Force }
 
     - name: Subir artefactos de compilacion
       uses: actions/upload-artifact@v4
