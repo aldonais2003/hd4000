@@ -1,1 +1,44 @@
+name: Compilacion automatica de archivos del proyecto
 
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - name: Obtener codigo del repositorio
+      uses: actions/checkout@v4
+
+    - name: Configurar MSBuild y herramientas de Visual Studio
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Configurar .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Compilar Panel de Control C#
+      run: msbuild IntelControlPanel.csproj /p:Configuration=Release /p:Platform="Any CPU"
+
+    - name: Compilar Cliente C++ (CMake)
+      run: |
+        cmake -B build -S .
+        cmake --build build --config Release
+
+    - name: Empaquetar artefactos compilados
+      run: |
+        mkdir release_files
+        copy bin\Release\net8.0-windows\* release_files\ || true
+        copy build\Release\* release_files\ || true
+        copy intel_hd4000.inf release_files\ || true
+
+    - name: Subir artefactos de compilacion
+      uses: actions/upload-artifact@v4
+      with:
+        name: IntelHD4000_Driver_Release
+        path: release_files/
