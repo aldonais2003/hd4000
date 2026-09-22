@@ -1,0 +1,26 @@
+﻿[Version]
+Signature="$WINDOWS NT$"
+Class=Display
+ClassGuid={4d36e968-e325-11ce-bfc1-08002be10318}
+Provider=%ManufacturerName%
+CatalogFile=intel_hd4000.cat
+DriverVer=09/22/2026,1.0.0.0
+
+[DestinationDirs]
+DefaultDestDir = 13
+
+[Manufacturer]
+%ManufacturerName%=Standard,NTamd64
+
+[Standard.NTamd64]
+%IntelHD4000.DeviceDesc% = IntelHD4000_Inst, PCI\VEN_8086&DEV_0166
+
+[IntelHD4000_Inst.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+intel_hd4000_kmd.sys
+
+[Strings]
+ManufacturerName="Custom Drivers"
+IntelHD4000.DeviceDesc="Intel(R) HD Graphics 4000 (Custom WDDM Driver)"
